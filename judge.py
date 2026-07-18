@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """
-중기부 온라인 모니터링 - 기사 수집 여부(O/X) 자동 판단 스크립트 (단일 링크용)
+Article Judge AI - decide whether a single article should be collected or skipped.
 
-여러 링크를 한 번에 처리하려면 judge_batch.py 를 쓰세요.
+To process many links at once, use judge_batch.py instead.
 
-사용법:
+Usage:
     python judge.py "https://example.com/news/123"
 
-설정:
-    같은 폴더에 .env 파일을 만들고 아래처럼 API 키를 넣어두세요.
+Setup:
+    Create a .env file in this folder with your API key:
         ANTHROPIC_API_KEY=sk-ant-...
 
-판단 기준은 criteria.md 에 있습니다. 담당자 피드백이 바뀌면 그 파일만 수정하면 됩니다.
+The judging rules live in criteria.md. Edit that file to change what
+"collect" vs "skip" means for your use case — no need to touch this script.
 """
 
 import argparse
@@ -27,35 +28,35 @@ load_dotenv()
 
 def main():
     parser = argparse.ArgumentParser(
-        description="기사 URL을 넣으면 중기부 모니터링 수집 여부(O/X)를 판단합니다."
+        description="Judge whether a single article URL should be collected or skipped."
     )
-    parser.add_argument("url", help="판단할 기사 URL")
+    parser.add_argument("url", help="Article URL to judge")
     args = parser.parse_args()
 
     if not os.environ.get("ANTHROPIC_API_KEY"):
         sys.exit(
-            "ANTHROPIC_API_KEY 가 설정되어 있지 않습니다.\n"
-            "이 폴더에 .env 파일을 만들고 ANTHROPIC_API_KEY=sk-ant-... 를 넣어주세요."
+            "ANTHROPIC_API_KEY is not set.\n"
+            "Create a .env file in this folder with: ANTHROPIC_API_KEY=sk-ant-..."
         )
 
     try:
         article = fetch_article(args.url)
     except RuntimeError as e:
-        sys.exit(f"[오류] {e}")
+        sys.exit(f"[Error] {e}")
 
     criteria = load_criteria()
     result = judge(article, criteria)
 
     decision = result.get("decision", "?")
-    label = {"O": "⭕ 수집", "X": "❌ 제외"}.get(decision, "❓ 확인 필요")
+    label = {"COLLECT": "✅ Collect", "SKIP": "❌ Skip"}.get(decision, "❓ Needs review")
 
     print("=" * 50)
-    print(f"매체 : {article['site']}")
-    print(f"제목 : {article['title']}")
+    print(f"Source   : {article['site']}")
+    print(f"Title    : {article['title']}")
     print("-" * 50)
-    print(f"판단 : {label}")
-    print(f"주제 : {result.get('topic', '')}")
-    print(f"근거 : {result.get('reason', '')}")
+    print(f"Decision : {label}")
+    print(f"Topic    : {result.get('topic', '')}")
+    print(f"Reason   : {result.get('reason', '')}")
     print("=" * 50)
 
 

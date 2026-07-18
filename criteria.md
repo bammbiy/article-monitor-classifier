@@ -1,36 +1,35 @@
-# 중기부 온라인 모니터링 수집 판단 기준
+# Collection Criteria
 
-마지막 업데이트: 2026-07-15 (실무 피드백 3차 반영)
+This file defines what "collect" vs "skip" means. Edit it freely — the
+scripts read this file every time they run, so changes take effect
+immediately without touching any code.
 
-이 파일을 수정하면 프로그램의 판단 기준이 바로 바뀝니다.
-담당자 피드백이 새로 오면 이 파일에 추가/수정하세요. 코드는 건드릴 필요 없습니다.
+The example below monitors AI/tech product news. Replace it with your
+own rules for whatever you're tracking (a competitor, an industry,
+a person, a stock, etc.).
 
-## ⭕ 수집 (O)
+## ✅ Collect
 
-- 같은 이슈를 다루는 기사는 매체가 다르면 전부 수집한다 (내용이 겹쳐도 매체 단위로 구분)
-  - 예: 매일경제 / 매일경제TV는 별도 매체로 취급 → 둘 다 수집
-- 소상공인·자영업자·중소기업에 **부정적 영향**을 다루는 기사
-- 최저임금 인상 관련 기사 중 다음과 연결되면 넓게 수집한다
-  - 소상공인/자영업/중기 부담
-  - 폐업, 무인화, 고용 축소
-  - 업종별·지역별 차등 적용 요구
-- 경제단체(한국경제인협회, 대한상공회의소, 한국경영자총협회, 중소기업중앙회, 소상공인연합회 등)의 우려·비판 입장이 담긴 기사
-- 같은 사건/이슈를 다른 언론사가 별도로 보도한 경우 (중복처럼 보여도 전부 수집)
+- Articles announcing a new AI product, model, or major feature launch
+- Funding rounds, acquisitions, or partnerships involving AI companies
+- Articles reporting a measurable real-world impact of an AI product
+  (adoption numbers, benchmark results, notable customer wins)
+- Critical or investigative coverage (safety concerns, controversies,
+  regulatory scrutiny) about an AI company or product
+- The same story covered by multiple outlets — collect each one
+  separately, even if the content overlaps
 
-## ❌ 제외 (X)
+## ❌ Skip
 
-- 단순 정부 발표·속보성 기사 (예: "최저임금 1만700원 확정" 식으로 숫자만 전달하는 기사)
-- 순수 정책 홍보 기사
-- 논조가 긍정적인 기사
-- 관련 키워드(최저임금, 소상공인 등)만 걸쳐 있고 실제 메인 주제는 다른 기사
+- Pure press releases with no independent reporting or analysis
+- Sponsored content or thinly-veiled advertising
+- Opinion pieces that don't introduce new information
+- Articles that mention the keyword in passing but are mainly about
+  something unrelated
+- Listicles / "top 10" roundups with no substantive analysis
 
-## 애매한 경우
+## When it's ambiguous
 
-- 특정 정책/피해 사례 취재가 아닌 논조 중심의 사설이라도, 소상공인 부담과 명확히 연결되면 O에 가깝게 판단한다
-- 판단이 애매하면 제외보다 수집 쪽으로 기운다 (담당자 피드백: "보수적으로 빼지 말 것")
-
-## 핵심 판단 원칙
-
-1. 가장 먼저 물어야 할 질문: "이 기사가 소상공인/자영업/중소기업에 부정적인 이슈를 다루는가?"
-2. 애매하면 배제보다 수집.
-3. 매체가 다르면 내용이 겹쳐도 각각 별도로 수집한다.
+- If a piece is borderline, lean toward collecting rather than skipping.
+- The core question to ask: "Does this article contain information a
+  monitor would actually want to know about?"

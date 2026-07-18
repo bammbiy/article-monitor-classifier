@@ -1,8 +1,9 @@
 """
-공통 로직: 기사 본문 추출 + Claude 판단
+Shared logic: article extraction + AI-based judging.
 
-judge.py(단일)와 judge_batch.py(여러 개)가 이 모듈을 같이 사용합니다.
-판단 기준 자체는 criteria.md 에 있고, 여기서는 그 기준을 불러와 API에 넘기는 역할만 합니다.
+Both judge.py (single URL) and judge_batch.py (many URLs) use this module.
+The actual judging rules live in criteria.md, not here — edit that file
+to define what "collect" vs "skip" means for your use case.
 """
 
 import json
@@ -15,7 +16,7 @@ from anthropic import Anthropic
 
 BASE_DIR = Path(__file__).parent
 CRITERIA_PATH = BASE_DIR / "criteria.md"
-MODEL = "claude-sonnet-5"  # 속도/비용 우선이면 "claude-haiku-4-5-20251001" 로 교체
+MODEL = "claude-sonnet-5"  # swap to "claude-haiku-4-5-20251001" for lower cost/latency
 
 HEADERS = {
     "User-Agent": (
@@ -26,13 +27,13 @@ HEADERS = {
 
 
 def fetch_article(url: str) -> dict:
-    """URL에서 기사 제목/매체명/본문을 추출한다."""
+    """Extract title, source name, and body text from a URL."""
     try:
         resp = requests.get(url, headers=HEADERS, timeout=15)
         resp.raise_for_status()
         html = resp.text
     except requests.RequestException as e:
-        raise RuntimeError(f"페이지를 가져오지 못했습니다: {e}")
+        raise RuntimeError(f"Failed to fetch page: {e}")
 
     text = trafilatura.extract(html, url=url, include_comments=False)
     metadata = trafilatura.extract_metadata(html, default_url=url)
@@ -40,7 +41,7 @@ def fetch_article(url: str) -> dict:
     title = metadata.title if metadata and metadata.title else None
     site = metadata.sitename if metadata and metadata.sitename else None
 
-    # trafilatura가 본문을 못 뽑으면 <p> 태그만 긁는 단순 fallback
+    # Fallback if trafilatura can't extract the body: just grab <p> tags
     if not text:
         soup = BeautifulSoup(html, "html.parser")
         paragraphs = [p.get_text(strip=True) for p in soup.find_all("p")]
@@ -50,42 +51,43 @@ def fetch_article(url: str) -> dict:
 
     if not text:
         raise RuntimeError(
-            "본문을 추출하지 못했습니다. 로그인/구독이 필요하거나 "
-            "자바스크립트 렌더링 방식의 사이트일 수 있습니다."
+            "Could not extract article body. The page may require a login, "
+            "sit behind a paywall, or render its content via JavaScript."
         )
 
     return {
         "url": url,
-        "title": title or "(제목 추출 실패)",
-        "site": site or "(매체 추출 실패)",
-        "text": text[:6000],  # 토큰 절약용 컷
+        "title": title or "(title extraction failed)",
+        "site": site or "(source extraction failed)",
+        "text": text[:6000],  # truncate to save tokens
     }
 
 
 def load_criteria() -> str:
     if not CRITERIA_PATH.exists():
-        raise FileNotFoundError(f"{CRITERIA_PATH} 파일이 없습니다.")
+        raise FileNotFoundError(f"{CRITERIA_PATH} not found.")
     return CRITERIA_PATH.read_text(encoding="utf-8")
 
 
 def judge(article: dict, criteria: str, client: Anthropic = None) -> dict:
-    """기사 하나에 대해 수집(O)/제외(X)를 판단한다."""
+    """Decide whether a single article should be collected or skipped."""
     client = client or Anthropic()
 
-    system_prompt = f"""당신은 중소벤처기업부(중기부) 온라인 모니터링 담당자를 보조하는 판단 보조원입니다.
-아래 기준에 따라 주어진 기사를 모니터링 대상으로 수집(O)할지 제외(X)할지 판단하세요.
+    system_prompt = f"""You are an assistant that helps a user monitor news articles.
+Based on the criteria below, decide whether the given article should be
+COLLECTED (relevant to what the user wants to track) or SKIPPED (not relevant).
 
 {criteria}
 
-# 출력 형식
-반드시 아래 JSON 형식으로만 답하세요. 다른 설명이나 코드펜스는 붙이지 마세요.
-{{"decision": "O 또는 X", "reason": "1~2문장 판단 근거", "topic": "기사의 핵심 주제 한 줄 요약"}}
+# Output format
+Respond with ONLY the following JSON. No other text, no code fences.
+{{"decision": "COLLECT or SKIP", "reason": "1-2 sentence justification", "topic": "one-line summary of the article's main topic"}}
 """
 
-    user_prompt = f"""매체: {article['site']}
-제목: {article['title']}
+    user_prompt = f"""Source: {article['site']}
+Title: {article['title']}
 
-본문:
+Body:
 {article['text']}
 """
 
@@ -104,4 +106,4 @@ def judge(article: dict, criteria: str, client: Anthropic = None) -> dict:
     try:
         return json.loads(raw)
     except json.JSONDecodeError:
-        return {"decision": "?", "reason": f"응답 파싱 실패, 원문: {raw}", "topic": ""}
+        return {"decision": "?", "reason": f"Failed to parse response: {raw}", "topic": ""}
