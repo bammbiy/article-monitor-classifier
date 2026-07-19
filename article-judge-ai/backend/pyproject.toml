@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "article-judge-ai"
+version = "0.2.0"
+description = "Judge whether a link (article, YouTube video, or social post) should be collected or skipped, based on user-defined criteria."
+requires-python = ">=3.10"
+dependencies = [
+    "anthropic>=0.40.0",
+    "requests>=2.31.0",
+    "trafilatura>=1.8.0",
+    "beautifulsoup4>=4.12.0",
+    "python-dotenv>=1.0.0",
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.29.0",
+    "youtube-transcript-api>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0", "httpx>=0.27.0"]
+
+[project.scripts]
+article-judge = "article_judge.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,7 @@
+# Paste one URL per line below — articles, YouTube links, or social posts.
+# Lines starting with '#' are ignored (feel free to use them as notes).
+#
+# Example:
+# https://example.com/news/1
+# https://www.youtube.com/watch?v=dQw4w9WgXcQ
+# https://x.com/example/status/123456789

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Article Judge AI — Link Triage Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <header class="topbar">
+    <div class="topbar__identity">
+      <span class="topbar__mark">✎</span>
+      <div>
+        <h1 class="topbar__title">Article Judge AI</h1>
+        <p class="topbar__subtitle">link triage desk</p>
+      </div>
+    </div>
+
+    <div class="tally" id="tally" aria-label="Result tally">
+      <div class="tally__item tally__item--collect">
+        <span class="tally__value" id="tally-collect">0</span>
+        <span class="tally__label">Collected</span>
+      </div>
+      <div class="tally__item tally__item--skip">
+        <span class="tally__value" id="tally-skip">0</span>
+        <span class="tally__label">Skipped</span>
+      </div>
+      <div class="tally__item tally__item--error">
+        <span class="tally__value" id="tally-error">0</span>
+        <span class="tally__label">Errors</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <aside class="panel panel--intake">
+      <div class="panel__section">
+        <label class="panel__label" for="links-input">Incoming links</label>
+        <p class="panel__hint">One per line. Articles, YouTube, or social posts — mix freely.</p>
+        <textarea id="links-input" class="intake__textarea" rows="10"
+          placeholder="https://example.com/news/1&#10;https://www.youtube.com/watch?v=...&#10;https://x.com/example/status/..."></textarea>
+
+        <div class="intake__actions">
+          <button id="run-btn" class="btn btn--primary">
+            <span class="btn__label">Run judgment</span>
+          </button>
+          <button id="clear-btn" class="btn btn--ghost">Clear log</button>
+        </div>
+        <p class="intake__status" id="intake-status" aria-live="polite"></p>
+      </div>
+
+      <details class="panel__section criteria" id="criteria-block">
+        <summary class="panel__label">Collection criteria</summary>
+        <p class="panel__hint">Edit the rules the judge applies. Saved changes take effect on the next run.</p>
+        <textarea id="criteria-textarea" class="criteria__textarea" rows="10"></textarea>
+        <div class="intake__actions">
+          <button id="save-criteria-btn" class="btn btn--secondary">Save criteria</button>
+          <span class="criteria__status" id="criteria-status" aria-live="polite"></span>
+        </div>
+      </details>
+
+      <details class="panel__section settings">
+        <summary class="panel__label">Connection</summary>
+        <label class="panel__hint" for="api-base-input">API base URL</label>
+        <input id="api-base-input" class="settings__input" type="text" value="http://localhost:8000">
+      </details>
+    </aside>
+
+    <section class="panel panel--log">
+      <div class="panel__section panel__section--log-header">
+        <label class="panel__label">Dispatch log</label>
+        <button id="export-btn" class="btn btn--ghost" disabled>Export CSV</button>
+      </div>
+
+      <div id="log" class="log">
+        <div class="log__empty" id="log-empty">
+          Paste links on the left and press <strong>Run judgment</strong>.<br>
+          Results will land here, stamped as they come in.
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<template id="ticket-template">
+  <article class="ticket">
+    <div class="ticket__stampzone">
+      <span class="stamp"></span>
+    </div>
+    <div class="ticket__main">
+      <div class="ticket__header">
+        <span class="ticket__type-badge"></span>
+        <span class="ticket__source"></span>
+      </div>
+      <h3 class="ticket__title"></h3>
+      <p class="ticket__topic"></p>
+      <p class="ticket__reason"></p>
+      <p class="ticket__error"></p>
+      <a class="ticket__link" target="_blank" rel="noopener noreferrer">Open original ↗</a>
+    </div>
+  </article>
+</template>
+
+<script src="app.js"></script>
+</body>
+</html>

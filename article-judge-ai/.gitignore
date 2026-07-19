@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# Secrets
+.env
+backend/.env
+
+# Generated output
+results_*.csv
+backend/results_*.csv
+
+# OS
+.DS_Store
