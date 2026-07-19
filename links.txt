@@ -1,0 +1,7 @@
+# Paste one URL per line below.
+# Lines starting with '#' are ignored (feel free to use them as notes).
+#
+# Example:
+# https://example.com/news/1
+# https://example.com/news/2
+# https://example.com/news/3
